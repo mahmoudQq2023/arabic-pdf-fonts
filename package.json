@@ -1,0 +1,16 @@
+{
+  "name": "arabic-pdf-fonts",
+  "version": "1.0.0",
+  "description": "Check whether an Arabic font produces a searchable PDF when HTML is printed with headless Chrome (presentation forms, lam-alef order).",
+  "type": "module",
+  "bin": { "check-arabic-pdf-font": "check-font.mjs" },
+  "scripts": { "check": "node check-font.mjs" },
+  "keywords": ["arabic", "pdf", "puppeteer", "headless-chrome", "fonts", "tounicode", "rtl", "text-extraction"],
+  "author": "Mahmoud Daghash",
+  "license": "MIT",
+  "homepage": "https://mahmoudqq2023.github.io/arabic-pdf-fonts/",
+  "dependencies": {
+    "pdfjs-dist": "^4.8.69",
+    "puppeteer": "^25.1.0"
+  }
+}
