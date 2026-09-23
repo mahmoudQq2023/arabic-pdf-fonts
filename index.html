@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which Arabic fonts give a searchable PDF? — arabic-pdf-fonts</title>
+<meta name="description" content="Tested with headless Chrome and pdf.js: 13 Arabic-capable fonts printed to PDF. Only Amiri stores real letters with the lam-alef ligature in order; Arial, Tahoma, Traditional Arabic, Noto Sans Arabic and the rest store presentation forms that cannot be searched.">
+<style>
+  :root { --bg: #fbfaf7; --fg: #1d1f24; --muted: #5d6270; --line: #e3e0d8; --accent: #3b3fb6; --ok: #1d7a46; --bad: #b3261e; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #15171c; --fg: #e8e6e1; --muted: #a3a7b3; --line: #2b2f38; --accent: #9ea2ff; --ok: #6fd39a; --bad: #ff8a80; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 780px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 1.85rem; margin: 0 0 .3rem; line-height: 1.25; } h2 { margin-top: 2.2rem; font-size: 1.25rem; }
+  .sub { color: var(--muted); margin: 0 0 1.6rem; }
+  a { color: var(--accent); }
+  code, pre { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
+  pre { background: rgba(127,127,127,.08); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: .9rem; }
+  .ar { direction: rtl; unicode-bidi: isolate; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .95rem; } td, th { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: start; vertical-align: top; }
+  .ok { color: var(--ok); font-weight: 600; } .bad { color: var(--bad); }
+  footer { margin-top: 3rem; color: var(--muted); font-size: .9rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Which Arabic fonts give a searchable PDF?</h1>
+  <p class="sub">Thirteen fonts printed to PDF by headless Chrome and read back with pdf.js. One passed.</p>
+
+  <p>If you build Arabic invoices, contracts, certificates or CVs as HTML and print them with Puppeteer,
+  Playwright or any HTML-to-PDF service built on Chrome, the PDF can look perfect and still carry no usable
+  text: copy-paste gives shaped glyph codes, a search for <span class="ar">الموظف</span> finds nothing, and
+  an ATS or search index reads noise. The screen never shows the problem.</p>
+
+  <h2>Results — Chrome 135, pdf.js 4.8, September 2026</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Font</th><th>Letters stored as</th><th>لا ligature</th><th>Words found</th></tr></thead>
+    <tbody>
+      <tr><td><b>Amiri</b> Regular</td><td class="ok">real Arabic letters</td><td class="ok">in order</td><td>15 / 18</td></tr>
+      <tr><td><b>Amiri</b> Bold</td><td class="ok">real Arabic letters</td><td class="ok">in order</td><td>16 / 18</td></tr>
+      <tr><td>IBM Plex Sans Arabic</td><td class="bad">presentation forms</td><td>—</td><td>0 / 18</td></tr>
+      <tr><td>Noto Sans Arabic</td><td class="bad">presentation forms</td><td>—</td><td>0 / 18</td></tr>
+      <tr><td>Arial</td><td class="bad">presentation forms</td><td>—</td><td>0 / 18</td></tr>
+      <tr><td>Tahoma</td><td class="bad">presentation forms</td><td>—</td><td>0 / 18</td></tr>
+      <tr><td>Times New Roman</td><td class="bad">presentation forms</td><td>—</td><td>0 / 18</td></tr>
+      <tr><td>Segoe UI</td><td class="bad">presentation forms</td><td>—</td><td>1 / 18</td></tr>
+      <tr><td>Traditional Arabic</td><td class="bad">presentation forms</td><td>—</td><td>0 / 18</td></tr>
+      <tr><td>Simplified Arabic</td><td class="bad">presentation forms</td><td>—</td><td>0 / 18</td></tr>
+      <tr><td>Arabic Typesetting</td><td class="bad">presentation forms</td><td>—</td><td>0 / 18</td></tr>
+      <tr><td>Sakkal Majalla</td><td class="bad">presentation forms</td><td>—</td><td>1 / 18</td></tr>
+      <tr><td>Andalus</td><td class="bad">presentation forms</td><td>—</td><td>0 / 18</td></tr>
+    </tbody>
+  </table></div>
+  <p>An August 2026 round with the same method added web fonts: Readex Pro, Scheherazade New and Lateef store
+  real letters but reverse the <span class="ar">لا</span> ligature (so <span class="ar">الأمر، الآن، لإدارة</span>
+  are not found); Noto Naskh Arabic, Noto Kufi Arabic, Cairo, Almarai and Tajawal store presentation forms.
+  The 2–3 words Amiri misses are an extraction artefact: pdf.js sometimes puts a space inside a word at a
+  text-run boundary, while the letters stay complete and in order.</p>
+
+  <h2>Why it happens</h2>
+  <p>Chrome shapes Arabic with HarfBuzz and embeds the shaped glyphs. To keep the text extractable it writes a
+  <code>ToUnicode</code> map from each glyph back to the characters it came from. For most Arabic fonts that
+  map points at the Unicode <em>presentation forms</em> (U+FB50–FDFF, U+FE70–FEFF), which describe a letter's
+  shape rather than the letter, so the text layer is a different string from the one you typed. The
+  <span class="ar">لا / لأ / لإ / لآ</span> ligature is a single glyph for two letters, and most faces that get
+  the letters right still map it back as alef + lam, reversed.</p>
+
+  <h2>Check your own font</h2>
+<pre>git clone https://github.com/mahmoudQq2023/arabic-pdf-fonts
+cd arabic-pdf-fonts &amp;&amp; npm install
+node check-font.mjs /path/to/YourFont.ttf another.otf
+node check-font.mjs --json fonts/*.ttf     # for CI; exits 1 if any font fails</pre>
+
+  <h2>What to do</h2>
+  <ul>
+    <li><b>Embed Amiri</b> (SIL Open Font License) for Arabic text that must stay searchable, with a real Bold
+    file: a synthetic bold can split a heading into one text run per letter.</li>
+    <li><b>Do not promise copyable harakat.</b> Diacritics render in every face and extracted as U+0000 in all of them.</li>
+    <li><b>Test the PDF, not the page.</b> Search the output for a word containing <span class="ar">لا</span> before shipping a template.</li>
+  </ul>
+  <p>If you only need the result: <a href="https://confileo.com/tools/text-to-pdf/">Confileo's text to PDF converter</a>
+  embeds Amiri for exactly this reason (Arabic interface: <a href="https://confileo.com/ar/nass-ila-pdf/">تحويل النص إلى PDF</a>).</p>
+
+  <footer>Code: <a href="https://github.com/mahmoudQq2023/arabic-pdf-fonts">github.com/mahmoudQq2023/arabic-pdf-fonts</a> · MIT · by Mahmoud Daghash</footer>
+</main>
+</body>
+</html>
